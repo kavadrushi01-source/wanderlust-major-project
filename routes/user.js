@@ -3,6 +3,11 @@ const router = express.Router();
 const passport = require('passport');
 const userController = require('../controllers/userController');
 
+// Root redirect to listings
+router.get("/", (req, res) => {
+    res.redirect("/listings");
+});
+
 router.get("/signup", userController.renderSignupForm);
 
 router.post("/signup", userController.signup);
