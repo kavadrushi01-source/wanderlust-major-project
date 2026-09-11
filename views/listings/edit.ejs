@@ -1,0 +1,149 @@
+<% layout("/layouts/boilerplate") %>
+    <div class="row">
+        <div class="col-8 offset-2">
+
+            <h3>Edit Your Listing</h3>
+            <form method="post" action="/listings/<%= listing._id %>?_method=PUT" novalidate
+                    class="needs-validation" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" name="listing[title]" value="<%= listing.title %>"
+                            placeholder="Add a catchy title" class="form-control" required>
+                        <div class="valid-feedback">Title looks good!</div>
+                        <div class="invalid-feedback">Please add a Title!</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea type="text" name="listing[description]" class="form-control"
+                            required><%= listing.description %></textarea>
+                        <div class="invalid-feedback">Please add Description!</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select name="listing[category]" class="form-select">
+                            <option value="Trending" <%= listing.category === 'Trending' ? 'selected' : '' %>>Trending</option>
+                            <option value="Beachfront" <%= listing.category === 'Beachfront' ? 'selected' : '' %>>Beachfront</option>
+                            <option value="Cabins" <%= listing.category === 'Cabins' ? 'selected' : '' %>>Cabins</option>
+                            <option value="Camping" <%= listing.category === 'Camping' ? 'selected' : '' %>>Camping</option>
+                            <option value="Castles" <%= listing.category === 'Castles' ? 'selected' : '' %>>Castles</option>
+                            <option value="Farms" <%= listing.category === 'Farms' ? 'selected' : '' %>>Farms</option>
+                            <option value="Rooms" <%= listing.category === 'Rooms' ? 'selected' : '' %>>Rooms</option>
+                            <option value="Lakefront" <%= listing.category === 'Lakefront' ? 'selected' : '' %>>Lakefront</option>
+                            <option value="Pools" <%= listing.category === 'Pools' ? 'selected' : '' %>>Pools</option>
+                            <option value="Islands" <%= listing.category === 'Islands' ? 'selected' : '' %>>Islands</option>
+                            <option value="Arctic" <%= listing.category === 'Arctic' ? 'selected' : '' %>>Arctic</option>
+                            <option value="Caves" <%= listing.category === 'Caves' ? 'selected' : '' %>>Caves</option>
+                            <option value="Beach" <%= listing.category === 'Beach' ? 'selected' : '' %>>Beach</option>
+                            <option value="Villas" <%= listing.category === 'Villas' ? 'selected' : '' %>>Villas</option>
+                            <option value="Iconic Cities" <%= listing.category === 'Iconic Cities' ? 'selected' : '' %>>Iconic Cities</option>
+                            <option value="Desert" <%= listing.category === 'Desert' ? 'selected' : '' %>>Desert</option>
+                            <option value="Mountains" <%= listing.category === 'Mountains' ? 'selected' : '' %>>Mountains</option>
+                            <option value="Treehouses" <%= listing.category === 'Treehouses' ? 'selected' : '' %>>Treehouses</option>
+                            <option value="Ski-in/Ski-out" <%= listing.category === 'Ski-in/Ski-out' ? 'selected' : '' %>>Ski-in/Ski-out</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Upload New Image</label>
+                        <input type="file" name="listing[image]" class="form-control" accept="image/*">
+                        <% if (listing.image) { %>
+                            <div class="mt-2">
+                                <img src="<%= listing.image %>" alt="Current listing image" style="max-width: 200px; border-radius: 8px;">
+                                <p class="text-muted mt-1">Current image</p>
+                            </div>
+                        <% } %>
+                    </div>
+
+                    <div class="row">
+                        <div class="mb-3 col-md-4">
+                            <label for="price" class="form-label">Price</label>
+                            <input type="number" name="listing[price]" value="<%= listing.price %>" min="0"
+                                placeholder="1200" class="form-control" required>
+                            <div class="invalid-feedback">Please enter a valid Price</div>
+                        </div>
+
+                        <div class="mb-3 col-md-8">
+                            <label for="country" class="form-label">Country</label>
+                            <input type="text" name="listing[country]" value="<%= listing.country %>"
+                                placeholder="india" class="form-control" required>
+                            <div class="invalid-feedback">Please enter the Country name</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Location</label>
+                        <input type="text" name="listing[location]" value="<%= listing.location %>"
+                            id="locationInput" placeholder="Search for a location..." class="form-control" required>
+                        <div class="invalid-feedback">Please enter your valid Location</div>
+                    </div>
+
+                    <input type="hidden" name="listing[geometry][type]" value="Point">
+                    <input type="hidden" id="lngInput" name="listing[geometry][coordinates][0]"
+                        value="<%= listing.geometry.coordinates[0] %>">
+                    <input type="hidden" id="latInput" name="listing[geometry][coordinates][1]"
+                        value="<%= listing.geometry.coordinates[1] %>">
+
+                    <div class="mb-3">
+                        <label class="form-label">Location on Map</label>
+                        <div id="map" class="create-map"></div>
+                    </div>
+
+                    <br>
+                    <button class="btn btn-dark edit-btn">Edit</button>
+                    <br><br>
+                </form>
+        </div>
+    </div>
+
+    <script>
+        const initLat = <%= listing.geometry.coordinates[1] %>;
+        const initLng = <%= listing.geometry.coordinates[0] %>;
+        const hasCoords = (initLat !== 0 || initLng !== 0);
+
+        const map = L.map('map').setView(hasCoords ? [initLat, initLng] : [20, 0], hasCoords ? 10 : 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        let marker;
+        if (hasCoords) {
+            marker = L.marker([initLat, initLng]).addTo(map);
+        }
+
+        function placeMarker(lat, lng) {
+            if (marker) map.removeLayer(marker);
+            marker = L.marker([lat, lng]).addTo(map);
+            map.setView([lat, lng], 10);
+        }
+
+        map.on('click', function (e) {
+            const { lat, lng } = e.latlng;
+            document.getElementById('latInput').value = lat;
+            document.getElementById('lngInput').value = lng;
+            placeMarker(lat, lng);
+        });
+
+        const locationInput = document.getElementById('locationInput');
+        let debounceTimer;
+        locationInput.addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(async () => {
+                const query = this.value;
+                if (query.length < 3) return;
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+                    const data = await res.json();
+                    if (data.length > 0) {
+                        const { lat, lon } = data[0];
+                        document.getElementById('latInput').value = lat;
+                        document.getElementById('lngInput').value = lon;
+                        placeMarker(parseFloat(lat), parseFloat(lon));
+                    }
+                } catch (err) {
+                    console.error('Geocoding error:', err);
+                }
+            }, 500);
+        });
+    </script>

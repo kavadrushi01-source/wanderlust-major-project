@@ -1,0 +1,150 @@
+<% layout("/layouts/boilerplate") %>
+
+        <% if(searchTerm || selectedCategory) { %>
+            <div class="filter-status-bar mb-3">
+                <% if(searchTerm) { %>
+                    <span class="badge bg-dark me-2">Search: "<%= searchTerm %>"</span>
+                <% } %>
+                <% if(selectedCategory) { %>
+                    <span class="badge bg-danger me-2"><%= selectedCategory %></span>
+                <% } %>
+                <a href="/listings" class="btn btn-sm btn-outline-secondary ms-1">
+                    <i class="fa-solid fa-xmark"></i> Clear All
+                </a>
+            </div>
+        <% } %>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar-wrapper">
+            <button class="filter-arrow filter-arrow-left" id="filterArrowLeft" disabled>
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <div class="filter-bar" id="filterBar">
+                <a href="/listings" class="filter-item <%= !selectedCategory ? 'active' : '' %>">
+                    <i class="fa-solid fa-fire"></i>
+                    <span>Trending</span>
+                </a>
+                <% for(let cat of categories) { %>
+                    <a href="/listings?category=<%= cat.name %>" class="filter-item <%= selectedCategory === cat.name ? 'active' : '' %>">
+                        <i class="<%= cat.icon %>"></i>
+                        <span><%= cat.name %></span>
+                    </a>
+                <% } %>
+            </div>
+            <button class="filter-arrow filter-arrow-right" id="filterArrowRight">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+
+        <div class="mb-3">
+            <button id="toggleMapBtn" class="btn btn-sm btn-outline-dark mb-2">
+                <i class="fa-solid fa-map"></i> Show Map
+            </button>
+            <div id="indexMapContainer" class="index-map-container" style="display: none;">
+                <div id="indexMap" class="index-map"></div>
+            </div>
+        </div>
+
+        <% if(allListings.length===0) { %>
+            <div class="text-center py-5">
+                <i class="fa-solid fa-search fa-3x text-muted mb-3"></i>
+                <h4>No listings found</h4>
+                <p class="text-muted">Try adjusting your search or filters</p>
+                <a href="/listings" class="btn btn-outline-dark">View All Listings</a>
+            </div>
+        <% } else { %>
+            <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1">
+                <% for(let listing of allListings){ %>
+                    <a href="/listings/<%= listing._id %>" class="listing-link">
+                        <div class="card col">
+                            <img src="<%= listing.image %>" class="card-img-top" alt="listing_image" style="height: 20rem">
+                            <div class="card-img-overlay"></div>
+                            <div class="card-body">
+                                <p class="card-text">
+                                    <b>
+                                        <%= listing.title %>
+                                    </b> <br>
+                                    <span class="price-without-tax">&#8377; <%= listing.price ? listing.price.toLocaleString("en-IN") : "N/A" %> / night</span>
+                                    <span class="price-with-tax">&#8377; <%= listing.price ? Math.round(listing.price * 1.18).toLocaleString("en-IN") : "N/A" %> / night <small class="text-muted">(incl. 18% tax)</small></span>
+                                </p>
+                            </div>
+                        </div>
+                    </a>
+                <% } %>
+            </div>
+        <% } %>
+
+        <script type="application/json" id="listingsData"><%- JSON.stringify(coordinates) %></script>
+
+        <script>
+            const allListings = JSON.parse(document.getElementById('listingsData').textContent);
+
+            const toggleBtn = document.getElementById('toggleMapBtn');
+            const mapContainer = document.getElementById('indexMapContainer');
+            let indexMapInitialized = false;
+            let indexMap;
+
+            toggleBtn.addEventListener('click', function () {
+                if (mapContainer.style.display === 'none') {
+                    mapContainer.style.display = 'block';
+                    toggleBtn.innerHTML = '<i class="fa-solid fa-xmark"></i> Hide Map';
+                    if (!indexMapInitialized) {
+                        initIndexMap();
+                        indexMapInitialized = true;
+                    }
+                } else {
+                    mapContainer.style.display = 'none';
+                    toggleBtn.innerHTML = '<i class="fa-solid fa-map"></i> Show Map';
+                }
+            });
+
+            function initIndexMap() {
+                indexMap = L.map('indexMap').setView([20, 0], 2);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(indexMap);
+
+                const bounds = [];
+                allListings.forEach(listing => {
+                    if (listing.lat !== 0 || listing.lng !== 0) {
+                        const marker = L.marker([listing.lat, listing.lng]).addTo(indexMap);
+                        const popupContent = `
+                            <a href="/listings/${listing.id}" style="text-decoration: none;">
+                                <img src="${listing.image}" style="width: 150px; height: 100px; object-fit: cover; border-radius: 8px;">
+                                <br>
+                                <strong>${listing.title}</strong>
+                                <br>₹${listing.price.toLocaleString('en-IN')} / night
+                                <br><small>${listing.location}, ${listing.country}</small>
+                            </a>
+                        `;
+                        marker.bindPopup(popupContent);
+                        bounds.push([listing.lat, listing.lng]);
+                    }
+                });
+
+                if (bounds.length > 0) {
+                    indexMap.fitBounds(bounds, { padding: [30, 30] });
+                }
+            }
+
+            // Filter bar scroll arrows
+            const filterBar = document.getElementById('filterBar');
+            const arrowLeft = document.getElementById('filterArrowLeft');
+            const arrowRight = document.getElementById('filterArrowRight');
+
+            function updateArrows() {
+                arrowLeft.disabled = filterBar.scrollLeft <= 0;
+                arrowRight.disabled = filterBar.scrollLeft + filterBar.clientWidth >= filterBar.scrollWidth - 1;
+            }
+
+            arrowLeft.addEventListener('click', () => {
+                filterBar.scrollBy({ left: -200, behavior: 'smooth' });
+            });
+
+            arrowRight.addEventListener('click', () => {
+                filterBar.scrollBy({ left: 200, behavior: 'smooth' });
+            });
+
+            filterBar.addEventListener('scroll', updateArrows);
+            updateArrows();
+        </script>
