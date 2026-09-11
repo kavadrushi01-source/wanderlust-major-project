@@ -36,6 +36,10 @@ const listingRoutes = require('./routes/listing.js');
 const reviewRoutes = require('./routes/review.js');
 const userRoutes = require('./routes/user.js');
 
+// Redirect root to listings
+app.get("/", (req, res) => {
+    res.redirect("/listings");
+});
 
 app.use("/listings", listingRoutes);
 app.use("/listings/:id/reviews", reviewRoutes);
