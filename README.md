@@ -340,6 +340,7 @@ Create the Space, clone it, copy this project inside, add the front matter above
 | "No open ports detected" / health check fails | The host is checking a different port — set the service port to `8080` or set `PORT` to the port the host expects |
 | Login works, then you get logged out instantly | The session cookie was rejected. This app sets `secure` cookies automatically on HTTPS and trusts the host's proxy (`app.set("trust proxy", 1)` in `app.js`) — do not remove that line |
 | Photo upload fails | Missing or wrong `CLOUDINARY_*` variables |
+| Container gets killed / restarts on a 256 MB plan | Add the variable `NODE_OPTIONS=--max-old-space-size=192` so Node keeps its heap inside the container limit |
 | First request is slow | The free instance was asleep — normal for free plans |
 
 ---
