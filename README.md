@@ -241,22 +241,30 @@ The repository already contains everything those hosts need:
 
 ### Option 1 — Back4App Containers (free, no credit card) ⭐ recommended
 
-1. Go to **[containers.back4app.com](https://containers.back4app.com)** → **Sign up** (GitHub login is fastest).
-2. *Connect GitHub* → authorize Back4App → tick the `wanderlust-major-project` repository.
-   Back4App needs a `Dockerfile` in the project root — this repo has one.
-3. On **Prepare your initial deployment** set:
+1. Sign up at **[dashboard.back4app.com](https://dashboard.back4app.com)** (GitHub login is fastest).
+2. On **My apps** you will see two tabs: **Backend** and **Web Deployment**.
+   ⚠️ Click the **Web Deployment** tab — that is Containers (the thing that runs a
+   `Dockerfile`). The **Backend** tab and its **+ New Backend** button create a *Parse Server*
+   backend, which this project does **not** need.
+3. **New App** → **Connect GitHub** → authorize Back4App → grant access to the
+   `wanderlust-major-project` repository only. Back4App needs a `Dockerfile` in the project
+   root — this repo has one.
+4. On **Prepare your initial deployment** set:
    - **App Name:** `wanderlust`
    - **Branch:** `main`
    - **Root:** leave it empty (the project lives at the repository root)
    - **Auto Deployment:** on, so every `git push` to `main` redeploys
-   - **Environment Variables:** the ones from the table above. Back4App wants uppercase
-     names with only letters, digits and `_` — these already match:
+   - **Environment Variables:** the ones from the table above. Back4App requires every name
+     to **start with `_` or an uppercase letter** and to use **only uppercase letters, digits
+     and `_`** — these already match:
      `MONGO_URL`, `SESSION_SECRET`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`,
-     `CLOUDINARY_API_SECRET` (optionally `NODE_ENV=production`)
-4. Click **Create App** and follow the *Deployment* tab (the first build takes 2–5 minutes).
-5. Open the app URL from the sidebar (**Actions → URL**) — the site should load on `/listings`.
-   If your app settings show a *Port* field, use `8080`; the app also follows the `PORT`
-   variable that Back4App injects automatically.
+     `CLOUDINARY_API_SECRET`, `NODE_ENV=production`
+   - Do **not** add `PORT`. The `Dockerfile` sets `ENV PORT=8080` and `app.js` listens on
+     `process.env.PORT || 8080`, so Back4App's own value is picked up automatically. Pasting a
+     fixed `PORT` would override it and can break the platform's health check.
+5. Click **Create App** and watch the *Deployment* tab / *Logs* (the first build takes 2–5 minutes).
+6. The public URL is on **App Overview** and in the **Actions → URL** menu — an
+   auto-generated `https://<something>.b4a.run` address. The site should load on `/listings`.
 
 *Free plan: 0.25 CPU, 256 MB RAM, 100 GB traffic — plenty for this project.*
 
@@ -350,7 +358,9 @@ Create the Space, clone it, copy this project inside, add the front matter above
 | Container gets killed / restarts on a 256 MB plan | Add the variable `NODE_OPTIONS=--max-old-space-size=192` so Node keeps its heap inside the container limit |
 | `querySrv ECONNREFUSED _mongodb._tcp.cluster0…` when running `npm run seed:demo` locally | Your computer's DNS refuses `SRV` queries. Use the three-host `mongodb://` string from Step 0; the deployed container resolves DNS normally |
 | `/healthz` reports `"database":"disconnected"` after deploy | Atlas **Network Access** must allow `0.0.0.0/0` — free hosting IPs are not fixed |
-| First request is slow | The free instance was asleep — normal for free plans |
+| Deploy never starts / you ended up with a database app | You clicked **+ New Backend** on the *Backend* tab. Use the **Web Deployment** tab instead — that is the product that builds your `Dockerfile` |
+| Back4App rejects an environment variable name | Names must start with `_` or an uppercase letter and contain only uppercase letters, digits and `_` (no dashes, no lowercase) |
+| First request is slow | The free instance was asleep — normal for *sleeping* free plans (Back4App's free tier does not sleep) |
 
 ---
 
