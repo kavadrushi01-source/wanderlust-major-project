@@ -1,11 +1,17 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
+const mongoose = require('mongoose');
 const path = require('path');
 const methodOverride = require('method-override');
 const ejsMate = require("ejs-mate");
 const flash = require('connect-flash');
 const ExpressError = require('./utils/ExpressError.js');
+
+// Every host (Koyeb, Back4App, Northflank, Zeabur, Railway, Nginx, ...) puts
+// the app behind a TLS-terminating reverse proxy. Trusting the first proxy
+// lets Express see the real protocol/IP from the X-Forwarded-* headers.
+app.set("trust proxy", 1);
 
 // Config
 require('./config/database');
@@ -45,6 +51,16 @@ app.use("/listings", listingRoutes);
 app.use("/listings/:id/reviews", reviewRoutes);
 app.use("/", userRoutes);
 
+// Health check - used by the Docker HEALTHCHECK and by hosting platforms
+app.get("/healthz", (req, res) => {
+    const dbConnected = mongoose.connection.readyState === 1;
+    res.status(dbConnected ? 200 : 503).json({
+        status: dbConnected ? "ok" : "degraded",
+        database: dbConnected ? "connected" : "disconnected",
+        uptime: Math.round(process.uptime()),
+    });
+});
+
 // Error handling
 app.all("*", (req, res, next) => {
     next(new ExpressError("Page Not Found", 404));
@@ -68,6 +84,15 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
+const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server is running on port ${PORT}`);
+});
+
+// Container hosts send SIGTERM when they stop or redeploy an instance,
+// so close the server and the database connection instead of being killed.
+process.on("SIGTERM", () => {
+    console.log("SIGTERM received - shutting down gracefully");
+    server.close(() => {
+        mongoose.connection.close(false).finally(() => process.exit(0));
+    });
 });

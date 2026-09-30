@@ -1,0 +1,20 @@
+# Never copy these into the image
+node_modules
+npm-debug.log*
+.env
+.env.*
+!.env.example
+
+# Local / editor junk
+.git
+.gitattributes
+.gitignore
+.vscode
+.idea
+*.log
+
+# Docs and local only helpers
+*.md
+docker-compose.yml
+Dockerfile
+.dockerignore

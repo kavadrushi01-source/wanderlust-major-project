@@ -1,22 +1,32 @@
 {
   "name": "major-project",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Wanderlust - an Airbnb style rental listing platform built with Node.js, Express and MongoDB",
+  "main": "app.js",
   "scripts": {
     "start": "node app.js",
+    "dev": "node --watch app.js",
+    "seed": "node init/index.js",
+    "seed:demo": "node init/seed-production.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.19.0"
   },
-  "keywords": [],
+  "keywords": [
+    "nodejs",
+    "express",
+    "mongodb",
+    "ejs",
+    "wanderlust"
+  ],
   "author": "Rushi",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
     "cloudinary": "^1.41.3",
     "connect-flash": "^0.1.1",
+    "connect-mongo": "^6.0.0",
     "dotenv": "^17.4.2",
     "ejs": "^6.0.1",
     "ejs-mate": "^4.0.0",
