@@ -200,6 +200,13 @@ The repository already contains everything those hosts need:
    `mongodb+srv://user:pass@cluster0.xxxxx.mongodb.net/wanderlust?retryWrites=true&w=majority`
    - Include the database name `wanderlust` in the string.
    - If the password contains `@`, `#`, `/` … URL-encode it (`@` → `%40`, `#` → `%23`).
+   - **If seeding fails with `querySrv ECONNREFUSED`:** your local DNS server refuses `SRV`
+     lookups (common on campus/office networks — Node reports `ECONNREFUSED` while Windows'
+     own resolver still works). Switch to the three-host form of the same string, from
+     *Connect → Drivers → "Node.js 2.2.12 or later"*:
+     `mongodb://user:pass@ac-xxxxx-shard-00-00.xxxxx.mongodb.net:27017,ac-xxxxx-shard-00-01.xxxxx.mongodb.net:27017,ac-xxxxx-shard-00-02.xxxxx.mongodb.net:27017/wanderlust?ssl=true&authSource=admin&replicaSet=atlas-xxxxx-shard-0&retryWrites=true&w=majority`
+     It uses ordinary name lookups, so it works everywhere the `mongodb+srv://` form does —
+     including inside the Docker container.
 5. *(Optional)* If the old Atlas data is gone, load the demo data again from your computer:
    ```powershell
    $env:MONGO_URL="mongodb+srv://..."; npm run seed:demo
@@ -341,6 +348,8 @@ Create the Space, clone it, copy this project inside, add the front matter above
 | Login works, then you get logged out instantly | The session cookie was rejected. This app sets `secure` cookies automatically on HTTPS and trusts the host's proxy (`app.set("trust proxy", 1)` in `app.js`) — do not remove that line |
 | Photo upload fails | Missing or wrong `CLOUDINARY_*` variables |
 | Container gets killed / restarts on a 256 MB plan | Add the variable `NODE_OPTIONS=--max-old-space-size=192` so Node keeps its heap inside the container limit |
+| `querySrv ECONNREFUSED _mongodb._tcp.cluster0…` when running `npm run seed:demo` locally | Your computer's DNS refuses `SRV` queries. Use the three-host `mongodb://` string from Step 0; the deployed container resolves DNS normally |
+| `/healthz` reports `"database":"disconnected"` after deploy | Atlas **Network Access** must allow `0.0.0.0/0` — free hosting IPs are not fixed |
 | First request is slow | The free instance was asleep — normal for free plans |
 
 ---
