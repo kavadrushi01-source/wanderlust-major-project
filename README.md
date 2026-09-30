@@ -228,7 +228,7 @@ The repository already contains everything those hosts need:
 
 | Host | Free? | Credit card? | Sleeps when idle? |
 |---|---|---|---|
-| **Back4App Containers** | yes | no | no |
+| **Back4App Containers** | yes | no | no (free URLs are not permanent) |
 | **Northflank** (Developer Sandbox) | yes | no | no |
 | **Koyeb** (1 free instance, 512 MB) | yes | yes (card validation) | no |
 | **Zeabur** | yes | no | yes (wakes in a few seconds) |
@@ -236,6 +236,11 @@ The repository already contains everything those hosts need:
 | **Hugging Face Spaces** | yes | no | yes (after 48 h) |
 
 **Recommended:** start with **Back4App Containers** — free, no credit card, always awake and deploys straight from GitHub.
+
+> ℹ️ On the new dashboard the *Free* plan card says **“URL expires”**. Treat the free
+> `*.b4a.run` address as a demo link: you can redeploy it any time with
+> **Actions → Deploy the Last Commit** (free), or move to the *Shared* plan ($5/month) if you
+> need a permanent URL.
 
 ---
 
@@ -250,10 +255,15 @@ The repository already contains everything those hosts need:
    `wanderlust-major-project` repository only. Back4App needs a `Dockerfile` in the project
    root — this repo has one.
 4. On **Prepare your initial deployment** set:
-   - **App Name:** `wanderlust`
+   - **App Name:** anything you like (`wanderlust` is fine) — the wizard pre-fills it from the
+     repository name and it becomes the `<name>.b4a.run` address
    - **Branch:** `main`
-   - **Root:** leave it empty (the project lives at the repository root)
-   - **Auto Deployment:** on, so every `git push` to `main` redeploys
+   - **Root:** `./` (or leave it empty — the project lives at the repository root)
+   - **Auto Deployment:** leave it **off** unless you are on a paid plan. The toggle says
+     *“Available on paid plans — turning it on selects Starter”*, so on the free plan you
+     redeploy yourself with **Actions → Deploy the Last Commit**
+   - **Database:** leave the PostgreSQL add-on (**+$5/month**) off — this project uses
+     MongoDB Atlas
    - **Environment Variables:** the ones from the table above. Back4App requires every name
      to **start with `_` or an uppercase letter** and to use **only uppercase letters, digits
      and `_`** — these already match:
@@ -266,7 +276,8 @@ The repository already contains everything those hosts need:
 6. The public URL is on **App Overview** and in the **Actions → URL** menu — an
    auto-generated `https://<something>.b4a.run` address. The site should load on `/listings`.
 
-*Free plan: 0.25 CPU, 256 MB RAM, 100 GB traffic — plenty for this project.*
+*Free plan: 0.25 CPU, 256 MB RAM, 100 GB traffic — plenty for this project. The wizard has no
+port field on purpose: Back4App injects `PORT` and `app.js` already listens on it.*
 
 ### Option 2 — Koyeb (free instance, always awake)
 
@@ -360,7 +371,9 @@ Create the Space, clone it, copy this project inside, add the front matter above
 | `/healthz` reports `"database":"disconnected"` after deploy | Atlas **Network Access** must allow `0.0.0.0/0` — free hosting IPs are not fixed |
 | Deploy never starts / you ended up with a database app | You clicked **+ New Backend** on the *Backend* tab. Use the **Web Deployment** tab instead — that is the product that builds your `Dockerfile` |
 | Back4App rejects an environment variable name | Names must start with `_` or an uppercase letter and contain only uppercase letters, digits and `_` (no dashes, no lowercase) |
-| First request is slow | The free instance was asleep — normal for *sleeping* free plans (Back4App's free tier does not sleep) |
+| The free app worked, then the `*.b4a.run` URL stopped answering | Free URLs are not guaranteed to last (the plan card literally says *URL expires*). Redeploy with **Actions → Deploy the Last Commit** — free — or move to the *Shared* plan ($5/month) for a permanent address |
+| An environment variable called `PORT` is on the list | Delete it. Back4App injects its own `PORT`; `app.js` already listens on `process.env.PORT`, and a fixed value can break the platform's routing / health check |
+| First request is slow | The free container may have been recycled — the free tier is a single 0.25 CPU / 256 MB container meant for demos |
 
 ---
 
