@@ -4,10 +4,12 @@
 
 Think of it like Airbnb — users can add their houses, villas, beach huts, etc. and other people can browse, search, and contact the owner.
 
-**Live Website:** _(paste your new deployment URL here — see [Deploy It For Free](#deploy-it-for-free-no-render-no-vercel))_
+**Live Website:** **https://wanderlustmajorproject-xr268asy.b4a.run**
 
-> ⚠️ The old Render link (`wanderlust-major-project-e5gi.onrender.com`) is dead — Render suspended the free web service.
-> The same project can be hosted for free somewhere else. Jump to **[Deploy It For Free](#deploy-it-for-free-no-render-no-vercel)**.
+> ℹ️ The old Render link (`wanderlust-major-project-e5gi.onrender.com`) is dead — Render
+> suspended the free web service, and that service has now been deleted. The project runs on
+> **Back4App Containers** instead. See **[Deploy It For Free](#deploy-it-for-free-no-render-no-vercel)**
+> to reproduce the setup on a fresh account.
 
 ---
 
@@ -275,6 +277,7 @@ The repository already contains everything those hosts need:
 5. Click **Create App** and watch the *Deployment* tab / *Logs* (the first build takes 2–5 minutes).
 6. The public URL is on **App Overview** and in the **Actions → URL** menu — an
    auto-generated `https://<something>.b4a.run` address. The site should load on `/listings`.
+   (This project is live at **https://wanderlustmajorproject-xr268asy.b4a.run**.)
 
 *Free plan: 0.25 CPU, 256 MB RAM, 100 GB traffic — plenty for this project. The wizard has no
 port field on purpose: Back4App injects `PORT` and `app.js` already listens on it.*
@@ -351,11 +354,13 @@ Create the Space, clone it, copy this project inside, add the front matter above
 
 ### After deploying — checklist
 
-- [ ] `/listings` loads and shows property cards
-- [ ] `/healthz` shows `{"status":"ok","database":"connected"}`
-- [ ] Sign up / login works (sessions are stored in MongoDB, so logins survive redeploys)
-- [ ] Adding a listing with a photo works (needs the Cloudinary variables)
-- [ ] Copy the live URL into the top of this README
+- [x] `/listings` loads and shows property cards — 12 listings, HTTP 200
+- [x] `/healthz` shows `{"status":"ok","database":"connected"}` — HTTP 200
+- [x] Sign up / login works (sessions are stored in MongoDB, so logins survive redeploys) — `POST /login` → 302 + `connect.sid` cookie, and `/listings/new` is 200 while logged in / 302 to `/login` while logged out
+- [x] Adding a listing with a photo works (needs the Cloudinary variables) — the photo was served from `res.cloudinary.com/<cloud>/image/upload/listingImages/…`, and deleting the listing removed the asset again (404)
+- [x] Copy the live URL into the top of this README
+
+*All of the above were re-checked against the live Back4App container on 30 Sep 2026.*
 
 ### If something goes wrong
 
