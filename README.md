@@ -4,7 +4,18 @@
 
 Think of it like Airbnb — users can add their houses, villas, beach huts, etc. and other people can browse, search, and contact the owner.
 
-**Live Website:** **https://wanderlustmajorproject-xr268asy.b4a.run**
+**Live Website:** **https://wanderlustmajorproject-kqhzf1gw.b4a.run**
+
+> ℹ️ This address is Back4App's free **temporary URL** (the dashboard says it is live for 60
+> minutes at a time). If it stops answering, redeploy with **Actions → Deploy the Last Commit**
+> (free) — a fresh temporary URL appears on the app's *Overview* page.
+>
+> ℹ️ Earlier hosts are dead: the Render service `wanderlust-major-project-e5gi.onrender.com`
+> was suspended and has been deleted, and the first Back4App address
+> (`wanderlustmajorproject-xr268asy.b4a.run`) was released when the temporary URL rotated.
+> The project runs on **Back4App Containers** instead. See
+> **[Deploy It For Free](#deploy-it-for-free-no-render-no-vercel)**
+> to reproduce the setup on a fresh account.
 
 > ℹ️ The old Render link (`wanderlust-major-project-e5gi.onrender.com`) is dead — Render
 > suspended the free web service, and that service has now been deleted. The project runs on
@@ -239,10 +250,12 @@ The repository already contains everything those hosts need:
 
 **Recommended:** start with **Back4App Containers** — free, no credit card, always awake and deploys straight from GitHub.
 
-> ℹ️ On the new dashboard the *Free* plan card says **“URL expires”**. Treat the free
-> `*.b4a.run` address as a demo link: you can redeploy it any time with
-> **Actions → Deploy the Last Commit** (free), or move to the *Shared* plan ($5/month) if you
-> need a permanent URL.
+> ℹ️ On the new dashboard the *Free* plan card says **“URL expires”** and shows a
+> **“Temporary URL Active”** banner — the free `*.b4a.run` address is only live for
+> 60 minutes at a time. Redeploy any time with **Actions → Deploy the Last Commit**
+> (free) to refresh it, or move to the *Shared* plan ($5/month) if you need a
+> permanent URL. This project's current address is
+> `https://wanderlustmajorproject-kqhzf1gw.b4a.run`.
 
 ---
 
@@ -277,7 +290,7 @@ The repository already contains everything those hosts need:
 5. Click **Create App** and watch the *Deployment* tab / *Logs* (the first build takes 2–5 minutes).
 6. The public URL is on **App Overview** and in the **Actions → URL** menu — an
    auto-generated `https://<something>.b4a.run` address. The site should load on `/listings`.
-   (This project is live at **https://wanderlustmajorproject-xr268asy.b4a.run**.)
+   (This project is live at **https://wanderlustmajorproject-kqhzf1gw.b4a.run** — the free plan issues a *temporary* URL, shown as “Temporary URL Active”; the latest address is always on the app's *Overview* page, and a redeploy refreshes it.)
 
 *Free plan: 0.25 CPU, 256 MB RAM, 100 GB traffic — plenty for this project. The wizard has no
 port field on purpose: Back4App injects `PORT` and `app.js` already listens on it.*
@@ -376,7 +389,7 @@ Create the Space, clone it, copy this project inside, add the front matter above
 | `/healthz` reports `"database":"disconnected"` after deploy | Atlas **Network Access** must allow `0.0.0.0/0` — free hosting IPs are not fixed |
 | Deploy never starts / you ended up with a database app | You clicked **+ New Backend** on the *Backend* tab. Use the **Web Deployment** tab instead — that is the product that builds your `Dockerfile` |
 | Back4App rejects an environment variable name | Names must start with `_` or an uppercase letter and contain only uppercase letters, digits and `_` (no dashes, no lowercase) |
-| The free app worked, then the `*.b4a.run` URL stopped answering | Free URLs are not guaranteed to last (the plan card literally says *URL expires*). Redeploy with **Actions → Deploy the Last Commit** — free — or move to the *Shared* plan ($5/month) for a permanent address |
+| The free app worked, then the `*.b4a.run` URL stopped answering (CloudFront `404 not found`) | The free plan uses a **temporary URL (live ~60 minutes)** — it rotates when the app is redeployed or the window lapses. Redeploy with **Actions → Deploy the Last Commit** (free), copy the new address from *Overview*, or move to the *Shared* plan ($5/month) for a permanent address |
 | An environment variable called `PORT` is on the list | Delete it. Back4App injects its own `PORT`; `app.js` already listens on `process.env.PORT`, and a fixed value can break the platform's routing / health check |
 | First request is slow | The free container may have been recycled — the free tier is a single 0.25 CPU / 256 MB container meant for demos |
 
