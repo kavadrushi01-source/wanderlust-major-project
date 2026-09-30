@@ -235,16 +235,21 @@ The repository already contains everything those hosts need:
 ### Option 1 — Back4App Containers (free, no credit card) ⭐ recommended
 
 1. Go to **[containers.back4app.com](https://containers.back4app.com)** → **Sign up** (GitHub login is fastest).
-2. **Create new app** → *Select from GitHub* → authorize Back4App → pick
-   `kavadrushi01-source/wanderlust-major-project` → branch `main`.
-3. In the app settings fill in:
-   - **Port:** `8080`
-   - **Environment variables:** `MONGO_URL`, `SESSION_SECRET`, `CLOUDINARY_CLOUD_NAME`,
-     `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` (and optionally `NODE_ENV=production`)
-   - Leave the build type on **Dockerfile** (it is detected automatically).
-4. Press **Create** and wait for the build (2–5 minutes the first time).
-5. Open the URL Back4App gives you — the site should come up on `/listings`.
-   Every future `git push` to `main` redeploys it automatically.
+2. *Connect GitHub* → authorize Back4App → tick the `wanderlust-major-project` repository.
+   Back4App needs a `Dockerfile` in the project root — this repo has one.
+3. On **Prepare your initial deployment** set:
+   - **App Name:** `wanderlust`
+   - **Branch:** `main`
+   - **Root:** leave it empty (the project lives at the repository root)
+   - **Auto Deployment:** on, so every `git push` to `main` redeploys
+   - **Environment Variables:** the ones from the table above. Back4App wants uppercase
+     names with only letters, digits and `_` — these already match:
+     `MONGO_URL`, `SESSION_SECRET`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`,
+     `CLOUDINARY_API_SECRET` (optionally `NODE_ENV=production`)
+4. Click **Create App** and follow the *Deployment* tab (the first build takes 2–5 minutes).
+5. Open the app URL from the sidebar (**Actions → URL**) — the site should load on `/listings`.
+   If your app settings show a *Port* field, use `8080`; the app also follows the `PORT`
+   variable that Back4App injects automatically.
 
 *Free plan: 0.25 CPU, 256 MB RAM, 100 GB traffic — plenty for this project.*
 
