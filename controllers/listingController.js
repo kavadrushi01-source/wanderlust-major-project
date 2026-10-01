@@ -3,7 +3,8 @@ const ExpressError = require('../utils/ExpressError');
 const { cloudinary } = require('../config/cloudinary');
 
 module.exports.index = async (req, res) => {
-    const { q, category } = req.query;
+    const q = typeof req.query.q === "string" ? req.query.q : "";
+    const category = typeof req.query.category === "string" ? req.query.category : "";
     let filter = {};
 
     if (q && q.trim()) {
@@ -46,16 +47,7 @@ module.exports.index = async (req, res) => {
 
     res.render("listings/index", {
         allListings,
-        coordinates: allListings.map(l => ({
-            id: l._id,
-            title: l.title,
-            location: l.location,
-            country: l.country,
-            lat: l.geometry.coordinates[1],
-            lng: l.geometry.coordinates[0],
-            image: l.image,
-            price: l.price,
-        })),
+        coordinates: allListings.map(l => { const coords = l.geometry && l.geometry.coordinates; const lng = Number(coords && coords[0]) || 0; const lat = Number(coords && coords[1]) || 0; return { id: l._id, title: l.title, location: l.location, country: l.country, lat, lng, image: l.image, price: l.price || 0 }; }),
         categories,
         selectedCategory: category || "",
         searchTerm: q || "",
@@ -72,7 +64,7 @@ module.exports.showListing = async (req, res) => {
     if (!listing) {
         throw new ExpressError("Listing you requested does not exist", 404);
     }
-    const mapCoords = { lat: listing.geometry.coordinates[1], lng: listing.geometry.coordinates[0] };
+    const coords2 = listing.geometry && listing.geometry.coordinates; const mapCoords = { lat: Number(coords2 && coords2[1]) || 0, lng: Number(coords2 && coords2[0]) || 0 };
     res.render("listings/show", { listing, mapCoords });
 };
 
@@ -103,17 +95,16 @@ module.exports.updateListing = async (req, res) => {
     let { id } = req.params;
     let listingData = { ...req.body.listing };
     if (listingData.price) listingData.price = Number(listingData.price);
-    const listing = await Listing.findByIdAndUpdate(id, listingData);
-    if (!listing) {
+    const oldListing = await Listing.findByIdAndUpdate(id, listingData);
+    if (!oldListing) {
         throw new ExpressError("Listing you requested does not exist", 404);
     }
     if (req.file) {
-        if (listing.imageFilename) {
-            await cloudinary.uploader.destroy(listing.imageFilename);
+        if (oldListing.imageFilename) {
+            try { await cloudinary.uploader.destroy(oldListing.imageFilename); }
+            catch (e) { console.error("Cloudinary delete failed:", e.message); }
         }
-        listing.image = req.file.path;
-        listing.imageFilename = req.file.filename;
-        await listing.save();
+        await Listing.findByIdAndUpdate(id, { image: req.file.path, imageFilename: req.file.filename });
     }
     req.flash("success", "Successfully listing updated!");
     res.redirect(`/listings/${id}`);
@@ -126,7 +117,8 @@ module.exports.destroyListing = async (req, res) => {
         throw new ExpressError("Listing you requested does not exist", 404);
     }
     if (deletedListing.imageFilename) {
-        await cloudinary.uploader.destroy(deletedListing.imageFilename);
+        try { await cloudinary.uploader.destroy(deletedListing.imageFilename); }
+        catch (e) { console.error("Cloudinary delete failed:", e.message); }
     }
     req.flash("success", "Successfully deleted the listing!");
     res.redirect("/listings");

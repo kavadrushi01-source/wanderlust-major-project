@@ -7,7 +7,7 @@ module.exports.isOwner = async (req, res, next) => {
         req.flash("error", "Listing you requested does not exist");
         return res.redirect("/listings");
     }
-    if (!listing.owner.equals(req.user._id)) {
+    if (!listing.owner || !listing.owner.equals(req.user._id)) {
         req.flash("error", "You don't have permission to do that");
         return res.redirect(`/listings/${id}`);
     }

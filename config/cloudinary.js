@@ -16,6 +16,15 @@ const storage = new CloudinaryStorage({
     },
 });
 
-const upload = multer({ storage });
+// 4 MB cap: Vercel Hobby serverless requests reject bodies above ~4.5 MB,
+// so reject oversized/foreign files here with a clean 400 instead of a 500/504.
+const upload = multer({
+    storage,
+    limits: { fileSize: 4 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        if (/^image\/(jpeg|png|gif|webp)$/.test(file.mimetype)) return cb(null, true);
+        cb(new Error("Only JPG, PNG, GIF or WEBP images are allowed"));
+    },
+});
 
 module.exports = { cloudinary, upload };

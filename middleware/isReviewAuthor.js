@@ -7,7 +7,7 @@ module.exports.isReviewAuthor = async (req, res, next) => {
         req.flash("error", "Review not found");
         return res.redirect(`/listings/${id}`);
     }
-    if (!review.author.equals(req.user._id)) {
+    if (!review.author || !review.author.equals(req.user._id)) {
         req.flash("error", "You don't have permission to do that");
         return res.redirect(`/listings/${id}`);
     }

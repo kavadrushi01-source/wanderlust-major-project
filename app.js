@@ -7,6 +7,7 @@ const methodOverride = require('method-override');
 const ejsMate = require("ejs-mate");
 const flash = require('connect-flash');
 const ExpressError = require('./utils/ExpressError.js');
+const multer = require('multer');
 
 // Every host (Koyeb, Back4App, Northflank, Zeabur, Railway, Nginx, ...) puts
 // the app behind a TLS-terminating reverse proxy. Trusting the first proxy
@@ -21,7 +22,8 @@ require('./config/passport')(app);
 // Middleware
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: "5mb" }));
+app.use(express.json({ limit: "5mb" }));
 app.use(methodOverride("_method"));
 app.engine('ejs', ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
@@ -51,6 +53,18 @@ app.use("/listings", listingRoutes);
 app.use("/listings/:id/reviews", reviewRoutes);
 app.use("/", userRoutes);
 
+// On serverless (Vercel) wait for the cached MongoDB connection before
+// serving app routes — avoids rendering with a dead DB handle on cold start.
+// /healthz is excluded so it can still report "disconnected" honestly.
+if (process.env.VERCEL) {
+    app.use((req, res, next) => {
+        if (req.path === "/healthz") return next();
+        const p = global.__wanderlust_mongo_promise__;
+        if (p && typeof p.then === "function") return p.then(() => next()).catch(() => next());
+        next();
+    });
+}
+
 // Health check - used by the Docker HEALTHCHECK and by hosting platforms
 app.get("/healthz", (req, res) => {
     const dbConnected = mongoose.connection.readyState === 1;
@@ -67,6 +81,15 @@ app.all("*", (req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+        if (err.code === "LIMIT_FILE_SIZE") {
+            return res.status(400).render("error.ejs", { message: "Image is too large — please upload a photo under 4 MB.", statusCode: 400 });
+        }
+        return res.status(400).render("error.ejs", { message: "Upload failed: " + err.message, statusCode: 400 });
+    }
+    if (err && /Only JPG, PNG, GIF or WEBP images are allowed/.test(err.message || "")) {
+        return res.status(400).render("error.ejs", { message: err.message, statusCode: 400 });
+    }
     let { statusCode = 500, message = "Something went wrong" } = err;
     if (err.name === "CastError") {
         statusCode = 404;

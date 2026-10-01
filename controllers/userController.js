@@ -9,7 +9,11 @@ module.exports.signup = async (req, res) => {
         let { username, email, password } = req.body;
         const newUser = new User({ email, username });
         const registeredUser = await User.register(newUser, password);
-        req.login(registeredUser, () => {
+        req.login(registeredUser, (loginErr) => {
+            if (loginErr) {
+                req.flash("error", "Account created — please log in.");
+                return res.redirect("/login");
+            }
             req.flash("success", "Welcome to Wanderlust!");
             res.redirect("/listings");
         });
@@ -24,8 +28,11 @@ module.exports.renderLoginForm = (req, res) => {
 };
 
 module.exports.login = (req, res) => {
+    const redirectUrl = res.locals.redirectUrl || "/listings";
+    // Clear the saved URL so the NEXT login goes to /listings, not here again.
+    if (req.session && req.session.returnTo) delete req.session.returnTo;
     req.flash("success", "Welcome back to Wanderlust!");
-    res.redirect(res.locals.redirectUrl || "/listings");
+    res.redirect(redirectUrl);
 };
 
 module.exports.logout = (req, res, next) => {
