@@ -4,22 +4,21 @@
 
 Think of it like Airbnb — users can add their houses, villas, beach huts, etc. and other people can browse, search, and contact the owner.
 
-**Live Website:** **https://wanderlustmajorproject-kqhzf1gw.b4a.run**
+**Live Website:** **https://wanderlust-major-project-eta.vercel.app**
 
-> ℹ️ This address is Back4App's free **temporary URL** (the dashboard says it is live for 60
-> minutes at a time). If it stops answering, redeploy with **Actions → Deploy the Last Commit**
-> (free) — a fresh temporary URL appears on the app's *Overview* page.
+> ℹ️ This is the permanent **Vercel** address (free Hobby plan — it cold-starts
+> after idle, so the very first request can take 10–30 s). Every push to `main`
+> redeploys automatically.
 >
 > ℹ️ Earlier hosts are dead: the Render service `wanderlust-major-project-e5gi.onrender.com`
-> was suspended and has been deleted, and the first Back4App address
-> (`wanderlustmajorproject-xr268asy.b4a.run`) was released when the temporary URL rotated.
-> The project runs on **Back4App Containers** instead. See
-> **[Deploy It For Free](#deploy-it-for-free-no-render-no-vercel)**
-> to reproduce the setup on a fresh account.
+> was suspended and has been deleted, and the Back4App free `*.b4a.run` addresses
+> (`wanderlustmajorproject-xr268asy.b4a.run`, `wanderlustmajorproject-kqhzf1gw.b4a.run`)
+> were temporary URLs (live ~60 minutes at a time).
+> The project runs on **Vercel serverless** now (`api/index.js` + `vercel.json`).
 
 > ℹ️ The old Render link (`wanderlust-major-project-e5gi.onrender.com`) is dead — Render
 > suspended the free web service, and that service has now been deleted. The project runs on
-> **Back4App Containers** instead. See **[Deploy It For Free](#deploy-it-for-free-no-render-no-vercel)**
+> **Vercel serverless** instead. See **[Deploy It For Free](#deploy-it-for-free-vercel)**
 > to reproduce the setup on a fresh account.
 
 ---
@@ -135,7 +134,7 @@ This website is built using:
 | Maps | OpenStreetMap + Leaflet |
 | Image Storage | Cloudinary |
 | Sessions | MongoDB (`connect-mongo`) |
-| Hosting | Any Docker host — see [Deploy It For Free](#deploy-it-for-free-no-render-no-vercel) |
+| Hosting | Vercel serverless (`api/index.js` + `vercel.json`) — also runs on any Docker host |
 
 ---
 
@@ -189,9 +188,21 @@ docker compose down           # stop everything
 
 ---
 
-## Deploy It For Free (no Render, no Vercel)
+## Deploy It For Free (Vercel + Docker options)
 
-This project is a normal Node.js server, so **any host that can run a Dockerfile can run it**.
+This project runs on **Vercel serverless** (`api/index.js` + `vercel.json`) — it is also
+a normal Node.js server, so **any host that can run the `Dockerfile` can run it too**.
+Nothing in the code changes between hosts, only the dashboard clicks differ.
+
+**Current host — Vercel (free Hobby plan, permanent URL):** import this repo (`main`
+branch), Framework Preset Other/Express, Root `./`, no build command, Node 20+,
+env vars `MONGO_URL`, `SESSION_SECRET`, `CLOUDINARY_CLOUD_NAME`,
+`CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `NODE_ENV=production` (no `PORT`),
+Atlas Network Access `0.0.0.0/0`. Every push to `main` redeploys; keep test photos
+under ~4 MB (serverless request cap ~4.5 MB); first request after idle can take
+10-30 s (cold start).
+
+Container-host options (same `Dockerfile`; only dashboard clicks differ).
 The repository already contains everything those hosts need:
 
 | File | Purpose |
@@ -373,7 +384,7 @@ Create the Space, clone it, copy this project inside, add the front matter above
 - [x] Adding a listing with a photo works (needs the Cloudinary variables) — the photo was served from `res.cloudinary.com/<cloud>/image/upload/listingImages/…`, and deleting the listing removed the asset again (404)
 - [x] Copy the live URL into the top of this README
 
-*All of the above were re-checked against the live Back4App container on 30 Sep 2026.*
+*All of the above were re-checked against the live Vercel site (`https://wanderlust-major-project-eta.vercel.app`) on 1 Oct 2026: `/` → 302 → `/listings` (12 cards, HTTP 200), `/healthz` → `{"status":"ok","database":"connected"}` (HTTP 200), `/signup` + `/login` forms render, `/listings/new` redirects anonymous visitors to `/login`, `?q=Goa` search (1 result) and `?category=Beachfront` filter (1 result) work, and a fake listing id returns the 404 page.*
 
 ### If something goes wrong
 
